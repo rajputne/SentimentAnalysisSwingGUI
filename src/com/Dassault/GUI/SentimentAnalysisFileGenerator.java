@@ -1,0 +1,1052 @@
+package com.Dassault.GUI;
+
+import com.Dassault.Utilities.SentenceUtils;
+import com.Dassault.Testers.StanfordLemmatizer;
+import com.Dassault.Algorithms.SWN3;
+import com.Dassault.Utilities.GeneralUtility;
+import javax.swing.JFileChooser;
+import com.Dassault.Business.ScoreWeightage;
+import com.Dassault.Business.ServiceRequest;
+import com.Dassault.Algorithms.StanfordNLP;
+import com.Dassault.Business.DyanamicScoreWeightage;
+import com.google.gson.Gson;
+import com.optimaize.langdetect.LanguageDetector;
+import com.optimaize.langdetect.LanguageDetectorBuilder;
+import com.optimaize.langdetect.i18n.LdLocale;
+import com.optimaize.langdetect.ngram.NgramExtractors;
+import com.optimaize.langdetect.profiles.LanguageProfile;
+import com.optimaize.langdetect.profiles.LanguageProfileReader;
+import com.optimaize.langdetect.text.CommonTextObjectFactories;
+import com.optimaize.langdetect.text.TextObject;
+import com.optimaize.langdetect.text.TextObjectFactory;
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.HasWord;
+import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.process.DocumentPreprocessor;
+import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
+import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.util.CoreMap;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.activation.MimetypesFileTypeMap;
+import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+/**
+ *
+ * @author NRT4
+ */
+public class SentimentAnalysisFileGenerator extends javax.swing.JFrame {
+
+    /**
+     * Creates new form SentimentAnalysisFileGenerator
+     */
+    String path = null;
+    static StanfordLemmatizer slem = new StanfordLemmatizer();
+
+    //Weightage
+    public static double supportHelpfulScoreWeightage = 0d;
+    public static double helpfulScoreWeightage = 0d;
+
+    public static double communicationQualityWeightage = 0d;
+    public static double communicationScoreWeightage = 0d;
+
+    public static double productKnowledgeWeightage = 0d;
+    public static double productKnowledgeScoreWeightage = 0d;
+
+    public static double csqWeightage = 0d;
+    public static double csqScoreWeightage = 0d;
+
+    public static double sentimentWeigtage = 0d;
+
+    DyanamicScoreWeightage dyanamicScoreWeightage;
+
+    public static boolean isExcel;
+    public static boolean isCSATExcel;
+
+    public SentimentAnalysisFileGenerator() {
+        initComponents();
+        cmbSentimentWeightage.setSelectedIndex(2);
+
+        cmbSplHelpScore.setSelectedIndex(1);
+        cmbCsq.setSelectedIndex(1);
+
+        cmbProdKnowledge.setSelectedIndex(1);
+        comboCsq.setSelectedIndex(1);
+
+        cmbHlpScore.setSelectedIndex(1);
+        cmbCommScore.setSelectedIndex(1);
+        cmbProdScore.setSelectedIndex(1);
+        cmbCSS.setSelectedIndex(1);
+
+        btnStanfordNLP.setVisible(false);
+        btnSentiwordnet.setVisible(false);
+        btnNLPLemmatization.setVisible(false);
+        lblStanfordNLP.setVisible(false);
+        lblStanfordNLP1.setVisible(false);
+        lblStanfordNLP2.setVisible(false);
+
+        dyanamicScoreWeightage = new DyanamicScoreWeightage();
+    }
+
+    //Check weather the file is Excel or Not
+    public String identifyFileTypeUsingFilesProbeContentType(final String fileName) {
+        String fileType = "Undetermined";
+        final File file = new File(fileName);
+        try {
+            fileType = Files.probeContentType(file.toPath());
+        } catch (IOException ioException) {
+            System.out.println(
+                    "ERROR: Unable to determine file type for " + fileName
+                    + " due to exception " + ioException);
+        }
+        return fileType;
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanelMainScreen = new javax.swing.JPanel();
+        openCSATFile = new javax.swing.JButton();
+        jTextField1 = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        btnStanfordNLP = new javax.swing.JButton();
+        btnNLPLemmatization = new javax.swing.JButton();
+        btnSentiwordnet = new javax.swing.JButton();
+        lblStanfordNLP = new javax.swing.JLabel();
+        lblStanfordNLP1 = new javax.swing.JLabel();
+        lblStanfordNLP2 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        cmbSplHelpScore = new javax.swing.JComboBox<>();
+        cmbHlpScore = new javax.swing.JComboBox<>();
+        cmbCommScore = new javax.swing.JComboBox<>();
+        cmbCsq = new javax.swing.JComboBox<>();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        cmbProdScore = new javax.swing.JComboBox<>();
+        cmbProdKnowledge = new javax.swing.JComboBox<>();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        comboCsq = new javax.swing.JComboBox<>();
+        jLabel10 = new javax.swing.JLabel();
+        cmbCSS = new javax.swing.JComboBox<>();
+        cmbSentimentWeightage = new javax.swing.JComboBox<>();
+        jLabel11 = new javax.swing.JLabel();
+        btnValidate = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanelMainScreen.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        openCSATFile.setText("Open CSAT File");
+        openCSATFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openCSATFileActionPerformed(evt);
+            }
+        });
+        jPanelMainScreen.add(openCSATFile, new org.netbeans.lib.awtextra.AbsoluteConstraints(812, 51, -1, -1));
+        jPanelMainScreen.add(jTextField1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 52, 784, -1));
+
+        jLabel2.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        jLabel2.setText("Sentiment Analysis");
+        jPanelMainScreen.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(355, 11, -1, -1));
+
+        btnStanfordNLP.setText("Stanford NLP ");
+        btnStanfordNLP.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnStanfordNLPActionPerformed(evt);
+            }
+        });
+        jPanelMainScreen.add(btnStanfordNLP, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 300, 145, -1));
+
+        btnNLPLemmatization.setText("Stanford NLP with Lemmatization ");
+        btnNLPLemmatization.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNLPLemmatizationActionPerformed(evt);
+            }
+        });
+        jPanelMainScreen.add(btnNLPLemmatization, new org.netbeans.lib.awtextra.AbsoluteConstraints(680, 310, -1, -1));
+
+        btnSentiwordnet.setText("Sentiwordnet ");
+        btnSentiwordnet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSentiwordnetActionPerformed(evt);
+            }
+        });
+        jPanelMainScreen.add(btnSentiwordnet, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 300, 162, -1));
+
+        lblStanfordNLP.setText("StanfordNLP Status");
+        jPanelMainScreen.add(lblStanfordNLP, new org.netbeans.lib.awtextra.AbsoluteConstraints(35, 335, -1, -1));
+
+        lblStanfordNLP1.setText("StanfordNLPWithLemma Status");
+        jPanelMainScreen.add(lblStanfordNLP1, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 330, -1, 31));
+
+        lblStanfordNLP2.setText("StanfordNLPSentoWordNet Status");
+        jPanelMainScreen.add(lblStanfordNLP2, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 340, -1, -1));
+
+        jLabel1.setText("Support Helpful Score");
+        jPanelMainScreen.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 170, -1, -1));
+
+        jLabel3.setText("Helpful Score");
+        jPanelMainScreen.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 208, -1, -1));
+
+        cmbSplHelpScore.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" }));
+        jPanelMainScreen.add(cmbSplHelpScore, new org.netbeans.lib.awtextra.AbsoluteConstraints(134, 167, -1, -1));
+
+        cmbHlpScore.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" }));
+        jPanelMainScreen.add(cmbHlpScore, new org.netbeans.lib.awtextra.AbsoluteConstraints(134, 205, -1, -1));
+
+        cmbCommScore.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" }));
+        jPanelMainScreen.add(cmbCommScore, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 210, -1, -1));
+
+        cmbCsq.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" }));
+        jPanelMainScreen.add(cmbCsq, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 170, -1, -1));
+
+        jLabel4.setText("Communication Quality");
+        jPanelMainScreen.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(207, 170, -1, -1));
+
+        jLabel5.setText("Communication Score");
+        jPanelMainScreen.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(207, 208, -1, -1));
+
+        cmbProdScore.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" }));
+        jPanelMainScreen.add(cmbProdScore, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 200, -1, -1));
+
+        cmbProdKnowledge.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" }));
+        jPanelMainScreen.add(cmbProdKnowledge, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 170, -1, -1));
+
+        jLabel6.setText("Product Knowledge");
+        jPanelMainScreen.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(441, 170, -1, -1));
+
+        jLabel7.setText("Product Knowledge Score");
+        jPanelMainScreen.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(441, 208, -1, -1));
+
+        jLabel8.setText("Customer Service Quality");
+        jPanelMainScreen.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(737, 170, -1, -1));
+
+        jLabel9.setText("Customer Service Score");
+        jPanelMainScreen.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(737, 208, -1, -1));
+
+        comboCsq.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" }));
+        jPanelMainScreen.add(comboCsq, new org.netbeans.lib.awtextra.AbsoluteConstraints(876, 167, -1, -1));
+
+        jLabel10.setText("Survey Comment ");
+        jPanelMainScreen.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(432, 246, -1, -1));
+
+        cmbCSS.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" }));
+        jPanelMainScreen.add(cmbCSS, new org.netbeans.lib.awtextra.AbsoluteConstraints(876, 205, -1, -1));
+
+        cmbSentimentWeightage.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" }));
+        cmbSentimentWeightage.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbSentimentWeightageActionPerformed(evt);
+            }
+        });
+        jPanelMainScreen.add(cmbSentimentWeightage, new org.netbeans.lib.awtextra.AbsoluteConstraints(535, 243, -1, -1));
+
+        jLabel11.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        jLabel11.setText("Set Weightage");
+        jPanelMainScreen.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(378, 104, -1, -1));
+
+        btnValidate.setText("Validate ");
+        btnValidate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnValidateActionPerformed(evt);
+            }
+        });
+        jPanelMainScreen.add(btnValidate, new org.netbeans.lib.awtextra.AbsoluteConstraints(454, 269, -1, -1));
+
+        getContentPane().add(jPanelMainScreen, java.awt.BorderLayout.CENTER);
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void openCSATFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openCSATFileActionPerformed
+        // TODO add your handling code here:
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+            path = selectedFile.getAbsolutePath();
+
+            try {
+                String fileBool = identifyFileTypeUsingFilesProbeContentType(selectedFile.getName());
+                if (!fileBool.contains("excel")) {
+                    JOptionPane.showMessageDialog(null, "The file choosen is not an excel file.");
+                    isExcel = false;
+                } else {
+                    JOptionPane.showMessageDialog(null, "You have selected an excel file.");
+                    isExcel = true;
+                }
+
+                jTextField1.setText(path);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "You have selected an invalid file");
+            }
+
+        }
+    }//GEN-LAST:event_openCSATFileActionPerformed
+
+    private void btnStanfordNLPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStanfordNLPActionPerformed
+
+        try {
+            // TODO add your handling code here:
+            readFromExcelStanford(path);
+            lblStanfordNLP.setText("File generated successfully.");
+        } catch (IOException ex) {
+            Logger.getLogger(SentimentAnalysisFileGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnStanfordNLPActionPerformed
+
+    private void btnNLPLemmatizationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNLPLemmatizationActionPerformed
+        // TODO add your handling code here:
+        try {
+            // TODO add your handling code here:
+            readFromExcelStanfordWithLemmatization(path);
+            lblStanfordNLP1.setText("The task completed sucessfully.");
+        } catch (IOException ex) {
+            Logger.getLogger(SentimentAnalysisFileGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnNLPLemmatizationActionPerformed
+
+    private void btnSentiwordnetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSentiwordnetActionPerformed
+        // TODO add your handling code here:
+        // TODO add your handling code here:
+        try {
+            // TODO add your handling code here:
+            readFromExcelSentiwordNet(path);
+            lblStanfordNLP2.setText("The task completed sucessfully.");
+        } catch (IOException ex) {
+            Logger.getLogger(SentimentAnalysisFileGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnSentiwordnetActionPerformed
+
+    private void cmbSentimentWeightageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSentimentWeightageActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmbSentimentWeightageActionPerformed
+
+    private void btnValidateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnValidateActionPerformed
+        if (isExcel) {
+
+            supportHelpfulScoreWeightage = Double.parseDouble((String) cmbSplHelpScore.getSelectedItem());
+            dyanamicScoreWeightage.setSupportHelpfulScoreWeightage(supportHelpfulScoreWeightage);
+
+            helpfulScoreWeightage = Double.parseDouble((String) cmbHlpScore.getSelectedItem());
+            dyanamicScoreWeightage.setHelpfulScoreWeightage(helpfulScoreWeightage);
+
+            communicationQualityWeightage = Double.parseDouble((String) cmbCsq.getSelectedItem());
+            dyanamicScoreWeightage.setCommunicationQualityWeightage(communicationQualityWeightage);
+
+            communicationScoreWeightage = Double.parseDouble((String) cmbCommScore.getSelectedItem());
+            dyanamicScoreWeightage.setCommunicationScoreWeightage(communicationScoreWeightage);
+
+            productKnowledgeWeightage = Double.parseDouble((String) cmbProdKnowledge.getSelectedItem());
+            dyanamicScoreWeightage.setProductKnowledgeWeightage(productKnowledgeWeightage);
+
+            productKnowledgeScoreWeightage = Double.parseDouble((String) cmbProdScore.getSelectedItem());
+            dyanamicScoreWeightage.setProductKnowledgeScoreWeightage(productKnowledgeScoreWeightage);
+
+            csqWeightage = Double.parseDouble((String) comboCsq.getSelectedItem());
+            dyanamicScoreWeightage.setCsqWeightage(csqWeightage);
+
+            csqScoreWeightage = Double.parseDouble((String) cmbCSS.getSelectedItem());
+            dyanamicScoreWeightage.setCsqScoreWeightage(csqScoreWeightage);
+
+            sentimentWeigtage = Double.parseDouble((String) cmbSentimentWeightage.getSelectedItem());
+            dyanamicScoreWeightage.setSentimentWeigtage(sentimentWeigtage);
+
+            double checkHundered = supportHelpfulScoreWeightage + helpfulScoreWeightage + communicationQualityWeightage + communicationScoreWeightage
+                    + productKnowledgeWeightage + productKnowledgeScoreWeightage + csqWeightage + csqScoreWeightage + sentimentWeigtage;
+            ObjectMapper mapper = new ObjectMapper();
+            if (checkHundered == 100) {
+                btnStanfordNLP.setVisible(true);
+                btnSentiwordnet.setVisible(true);
+                btnNLPLemmatization.setVisible(true);
+                lblStanfordNLP.setVisible(true);
+                lblStanfordNLP1.setVisible(true);
+                lblStanfordNLP2.setVisible(true);
+
+                try {
+                    // Convert object to JSON string and save into a file directly
+                    mapper.writeValue(new File("C:\\Users\\nrt4\\Documents\\NetBeansProjects\\SentimentAnalysisSwingGUI\\dyanamicScoreWeightage.json"), dyanamicScoreWeightage);
+
+                    // Convert object to JSON string
+                    String jsonInString = mapper.writeValueAsString(dyanamicScoreWeightage);
+                    System.out.println(jsonInString);
+
+                    // Convert object to JSON string and pretty print
+                    jsonInString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(dyanamicScoreWeightage);
+                    System.out.println(jsonInString);
+
+                } catch (JsonGenerationException e) {
+                    e.printStackTrace();
+                } catch (JsonMappingException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            } else {
+                btnStanfordNLP.setVisible(false);
+                btnSentiwordnet.setVisible(false);
+                btnNLPLemmatization.setVisible(false);
+                lblStanfordNLP.setVisible(false);
+                lblStanfordNLP1.setVisible(false);
+                lblStanfordNLP2.setVisible(false);
+                JOptionPane.showMessageDialog(null, "The weightage is not 100 percent. Please check the weightage.");
+            }
+            System.out.print(checkHundered);
+        } else {
+            JOptionPane.showMessageDialog(null, "You have not selected Excel file.");
+        }
+    }//GEN-LAST:event_btnValidateActionPerformed
+
+    public static void readFromExcelStanford(String file) throws IOException {
+        HSSFWorkbook myExcelBook = new HSSFWorkbook(new FileInputStream(file));
+
+        HSSFSheet myExcelSheet = myExcelBook.getSheet("Sheet1");
+
+        Iterator<Row> iterator = myExcelSheet.iterator();
+
+        double sentimentScore = 0d;
+        String sentiment = null;
+        double supportRepresentativeHelpfulness;
+        double helpfulScore = 0;
+        double communicationQuality;
+        double communicationScore;
+        double productKnowledge;
+        double productKnowledgeScore;
+        double customerServiceQuality;
+        double customerServiceScore;
+        double sentimentWeightage = 0;
+        List srList = new ArrayList<ServiceRequest>();
+
+        while (iterator.hasNext()) {
+            Row nextRow = iterator.next();
+            if (nextRow != null) {
+                if (nextRow.getRowNum() == 0) {
+                    continue; //just skip the rows if row number is 0 or 1
+                }
+                String srNumber = nextRow.getCell(1).getStringCellValue();
+                if (!srNumber.isEmpty()) {
+                    ServiceRequest sr = new ServiceRequest();
+                    try {
+                        String srComments = nextRow.getCell(40).getStringCellValue();
+                        if (!srComments.isEmpty()) {
+                            //preprocess the text
+                            String language = GeneralUtility.LanguageDetector(nextRow.getCell(40).getStringCellValue());
+                            if (language.contains("en") || language.isEmpty()) {
+                                System.out.print("SR Number: " + srNumber);
+                                System.out.print("SRComments:" + srComments);
+                                System.out.println("Language:" + language);
+                                sentimentScore = StanfordNLP.getSentiments(srComments);
+                                if (Double.isNaN(sentimentScore)) {
+                                    sentimentScore = -1;
+                                }
+                            } else {
+                                srComments = language;
+                                sentimentScore = 2;
+                            }
+                        } else {
+                            sentimentScore = 2;
+                        }
+
+                        //Assign Sentiment Weightage
+                        if (sentimentScore >= 0 && sentimentScore < 1.5) {
+                            sentiment = "Negative";
+                            sentimentWeightage = sentimentWeigtage * ScoreWeightage.ZERO_PERCENT;
+                        } else if (sentimentScore >= 1.5 && sentimentScore < 2.5) {
+                            sentiment = "Neutral";
+                            sentimentWeightage = sentimentWeigtage * ScoreWeightage.FIFTY_PERCENT;
+                        } else if (sentimentScore >= 2.5 && sentimentScore < 4.0) {
+                            sentiment = "Positive";
+                            sentimentWeightage = sentimentWeigtage * ScoreWeightage.HUNDERED_PERCENT;
+                        } else if (sentimentScore == -1) {
+                            sentiment = "No Sentiments";
+                            sentimentWeightage = sentimentWeigtage * ScoreWeightage.FIFTY_PERCENT;
+                        }
+
+                        //Assign support Representative Helpfulnes weightage
+                        String srHelpFulness = nextRow.getCell(32).getStringCellValue();
+                        supportRepresentativeHelpfulness = supportHelpfulScoreWeightage * GeneralUtility.genericScoresForValues(srHelpFulness);
+
+                        double srHelpFulScore = nextRow.getCell(33).getNumericCellValue();
+                        int numericValue = (int) srHelpFulScore;
+                        helpfulScore = helpfulScoreWeightage * GeneralUtility.genericScoresForValues(numericValue);
+
+                        //Communication
+                        String cnString = nextRow.getCell(34).getStringCellValue();
+                        communicationQuality = communicationQualityWeightage * GeneralUtility.genericScoresForValues(cnString);
+
+                        double cnScore = nextRow.getCell(35).getNumericCellValue();
+                        numericValue = (int) cnScore;
+                        communicationScore = communicationScoreWeightage * GeneralUtility.genericScoresForValues(numericValue);
+
+                        //Product Knowledge
+                        String pkString = nextRow.getCell(36).getStringCellValue();
+                        productKnowledge = productKnowledgeWeightage * GeneralUtility.genericScoresForValues(pkString);
+
+                        double pkScore = nextRow.getCell(37).getNumericCellValue();
+                        numericValue = (int) pkScore;
+                        productKnowledgeScore = productKnowledgeScoreWeightage * GeneralUtility.genericScoresForValues(numericValue);
+
+                        //Customer Service Quality Knowledge
+                        String csString = nextRow.getCell(38).getStringCellValue();
+                        customerServiceQuality = csqWeightage * GeneralUtility.genericScoresForValues(csString);
+                        double csScore = nextRow.getCell(39).getNumericCellValue();
+                        numericValue = (int) csScore;
+                        customerServiceScore = csqScoreWeightage * GeneralUtility.genericScoresForValues(numericValue);
+                        String submitterSite = nextRow.getCell(26).getStringCellValue();
+                        String submitterPlatform = nextRow.getCell(25).getStringCellValue();
+                        String geography = nextRow.getCell(24).getStringCellValue();
+                        String closureType = nextRow.getCell(3).getStringCellValue();
+                        String feResponsible = nextRow.getCell(11).getStringCellValue();
+                        String srType = nextRow.getCell(28).getStringCellValue();
+
+                        //Put all the values in the object.
+                        sr.setSupportRepresentativeHelpfulness(supportRepresentativeHelpfulness);
+                        sr.setHelpfulScore(helpfulScore);
+                        sr.setCommunicationQuality(communicationQuality);
+                        sr.setCommunicationScore(communicationScore);
+                        sr.setProductKnowledge(productKnowledge);
+                        sr.setProductKnowledgeScore(productKnowledgeScore);
+                        sr.setCustomerServiceQuality(customerServiceQuality);
+                        sr.setCustomerServiceScore(customerServiceScore);
+                        sr.setSrNumber(srNumber);
+                        sr.setSurveyComments(srComments);
+                        sr.setSubmitterGeography(geography);
+                        sr.setSentiment(sentiment);
+                        sr.setSentimentWeightage(sentimentWeightage);
+                        sr.setSentimentScore(sentimentScore);
+                        sr.setSumOfScores(sr.getSumOfAllScores());
+                        sr.setClosureType(closureType);
+                        sr.setSubmitterPlatform(submitterPlatform);
+                        sr.setSrType(srType);
+                        sr.setFEResponsible(feResponsible);
+                        sr.setSubmitterSite(submitterSite);
+
+                        srList.add(sr);
+
+                    } catch (Exception e) {
+                        System.out.print(e.getMessage());
+                    }
+                }
+            }
+        }
+
+        String json = new Gson().toJson(srList);
+        /*try {
+
+            gson.toJson(json, new FileWriter("file_StanfordNLP.txt"));
+
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }*/
+
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter("file_StanfordNLP.txt"));
+            writer.write(json);
+
+        } catch (IOException e) {
+        } finally {
+            try {
+                if (writer != null) {
+                    writer.close();
+                }
+            } catch (IOException e) {
+            }
+        }
+        System.out.println("The task completed sucessfully.");
+
+    }
+
+    public static String removeUrl(String commentstr) {
+        String urlPattern = "((https?|ftp|gopher|telnet|file|Unsure|http):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)";
+        Pattern p = Pattern.compile(urlPattern, Pattern.CASE_INSENSITIVE);
+        Matcher m = p.matcher(commentstr);
+        int i = 0;
+        while (m.find()) {
+            commentstr = commentstr.replaceAll(m.group(i), "").trim();
+            i++;
+        }
+        return commentstr;
+    }
+
+    public static void readFromExcelStanfordWithLemmatization(String file) throws IOException {
+
+        HSSFWorkbook myExcelBook = new HSSFWorkbook(new FileInputStream(file));
+        HSSFSheet myExcelSheet = myExcelBook.getSheet("Sheet1");
+
+        Iterator<Row> iterator = myExcelSheet.iterator();
+
+        double sentimentScore = 0d;
+        String sentiment = null;
+        double supportRepresentativeHelpfulness;
+        double helpfulScore = 0;
+        double communicationQuality;
+        double communicationScore;
+        double productKnowledge;
+        double productKnowledgeScore;
+        double customerServiceQuality;
+        double customerServiceScore;
+        double sentimentWeightage = 0;
+        List srList = new ArrayList<ServiceRequest>();
+
+        while (iterator.hasNext()) {
+            Row nextRow = iterator.next();
+            if (nextRow != null) {
+                if (nextRow.getRowNum() == 0) {
+                    continue; //just skip the rows if row number is 0 or 1
+                }
+                String srNumber = nextRow.getCell(1).getStringCellValue();
+                if (!srNumber.isEmpty()) {
+                    ServiceRequest sr = new ServiceRequest();
+                    System.out.print("SR Number: " + srNumber);
+                    try {
+                        String srComments = nextRow.getCell(40).getStringCellValue();
+                        srComments = srComments.trim().replaceAll(" +", " ");
+                        //1. Remove all the Digits
+                        srComments = srComments.replaceAll("[0-9]", "");
+
+                        //2. Remove Links
+                        srComments = removeUrl(srComments);
+                        srComments = srComments.replace("/", "");
+                        srComments = srComments.replace("[^A-Za-z.!?]", " ");
+                        srComments = srComments.replaceAll("([^\\w\\s\\d])\\1+", "$1");
+                        //3. Remove Stop Words Skip
+                        //\ srComments = cleanStopWords(srComments1);
+                        String clean = srComments;
+
+                        if (!clean.isEmpty()) {
+                            //preprocess the text
+                            String language = GeneralUtility.LanguageDetector(nextRow.getCell(40).getStringCellValue());
+                            if (language.contains("en") || language.isEmpty()) {
+
+                                Reader reader = new StringReader(clean);
+                                DocumentPreprocessor dp = new DocumentPreprocessor(reader);
+                                List<String> sentenceList = new ArrayList<String>();
+                                for (List<HasWord> sentence : dp) {
+                                    // SentenceUtils not Sentence
+                                    String sentenceString = SentenceUtils.listToString(sentence);
+                                    sentenceList.add(sentenceString);
+                                }
+                                StringBuilder mainString = new StringBuilder();
+                                for (String sentence : sentenceList) {
+                                    System.out.println(sentence);
+                                    System.out.println(slem.lemmatize(sentence));
+                                    String test[] = slem.lemmatize(sentence).toString().split(",");
+                                    StringBuilder sb = new StringBuilder();
+                                    for (String text1 : test) {
+                                        clean = text1.replaceAll("[^A-Za-z]", " ");
+                                        clean = clean.trim().replaceAll(" +", " ");
+                                        if (!clean.isEmpty()) {
+                                            //clean = p.stripAffixes(clean);
+                                        }
+                                        sb.append(clean);
+                                        sb.append(" ");
+                                    }
+                                    System.out.println("Sentences:" + sb);
+                                    mainString.append(sb);
+                                }
+                                System.out.println("Original String" + mainString);
+
+                                String mainStringtoString = mainString.toString().trim().replaceAll(" +", " ");
+                                mainStringtoString = mainStringtoString.replaceAll("[^A-Za-z.]", " ");
+
+                                System.out.println("Original String" + mainStringtoString);
+                                mainStringtoString = srComments.replaceAll("[^A-Za-z.?!]", " ");;
+                                sentimentScore = StanfordNLP.getSentiments(mainStringtoString);
+                                //srComments = mainStringtoString;
+                                if (Double.isNaN(sentimentScore)) {
+                                    sentimentScore = -1;
+                                    srComments = srComments.replaceAll("[?]", "");
+                                }
+                            } else {
+                                srComments = language;
+                                sentimentScore = 2;
+                            }
+                        } else {
+                            sentimentScore = 2;
+                        }
+
+                        //Assign Sentiment Weightage
+                        if (sentimentScore >= 0 && sentimentScore < 1.5) {
+                            sentiment = "Negative";
+                            sentimentWeightage = sentimentWeigtage * ScoreWeightage.ZERO_PERCENT;
+                        } else if (sentimentScore >= 1.5 && sentimentScore < 2.5) {
+                            sentiment = "Neutral";
+                            sentimentWeightage = sentimentWeigtage * ScoreWeightage.FIFTY_PERCENT;
+                        } else if (sentimentScore >= 2.5 && sentimentScore < 4.0) {
+                            sentiment = "Positive";
+                            sentimentWeightage = sentimentWeigtage * ScoreWeightage.HUNDERED_PERCENT;
+                        } else if (sentimentScore == -1) {
+                            sentiment = "No Sentiments";
+                            sentimentWeightage = sentimentWeigtage * ScoreWeightage.FIFTY_PERCENT;
+                        }
+
+                        //Assign support Representative Helpfulnes weightage
+                        String srHelpFulness = nextRow.getCell(32).getStringCellValue();
+                        supportRepresentativeHelpfulness = supportHelpfulScoreWeightage * GeneralUtility.genericScoresForValues(srHelpFulness);
+
+                        double srHelpFulScore = nextRow.getCell(33).getNumericCellValue();
+                        int numericValue = (int) srHelpFulScore;
+                        helpfulScore = helpfulScoreWeightage * GeneralUtility.genericScoresForValues(numericValue);
+
+                        //Communication
+                        String cnString = nextRow.getCell(34).getStringCellValue();
+                        communicationQuality = communicationQualityWeightage * GeneralUtility.genericScoresForValues(cnString);
+
+                        double cnScore = nextRow.getCell(35).getNumericCellValue();
+                        numericValue = (int) cnScore;
+                        communicationScore = communicationScoreWeightage * GeneralUtility.genericScoresForValues(numericValue);
+
+                        //Product Knowledge
+                        String pkString = nextRow.getCell(36).getStringCellValue();
+                        productKnowledge = productKnowledgeWeightage * GeneralUtility.genericScoresForValues(pkString);
+
+                        double pkScore = nextRow.getCell(37).getNumericCellValue();
+                        numericValue = (int) pkScore;
+                        productKnowledgeScore = productKnowledgeScoreWeightage * GeneralUtility.genericScoresForValues(numericValue);
+
+                        //Customer Service Quality Knowledge
+                        String csString = nextRow.getCell(38).getStringCellValue();
+                        customerServiceQuality = csqWeightage * GeneralUtility.genericScoresForValues(csString);
+
+                        double csScore = nextRow.getCell(39).getNumericCellValue();
+                        numericValue = (int) csScore;
+                        customerServiceScore = csqScoreWeightage * GeneralUtility.genericScoresForValues(numericValue);
+
+                        String submitterSite = nextRow.getCell(26).getStringCellValue();
+                        String submitterPlatform = nextRow.getCell(25).getStringCellValue();
+                        String geography = nextRow.getCell(24).getStringCellValue();
+                        String closureType = nextRow.getCell(3).getStringCellValue();
+                        String feResponsible = nextRow.getCell(11).getStringCellValue();
+                        String srType = nextRow.getCell(28).getStringCellValue();
+
+                        if (!submitterSite.isEmpty()) {
+                            System.out.println("Submitter Site" + submitterSite);
+                        }
+                        //Put all the values in the object.
+                        sr.setSupportRepresentativeHelpfulness(supportRepresentativeHelpfulness);
+                        sr.setHelpfulScore(helpfulScore);
+                        sr.setCommunicationQuality(communicationQuality);
+                        sr.setCommunicationScore(communicationScore);
+                        sr.setProductKnowledge(productKnowledge);
+                        sr.setProductKnowledgeScore(productKnowledgeScore);
+                        sr.setCustomerServiceQuality(customerServiceQuality);
+                        sr.setCustomerServiceScore(customerServiceScore);
+
+                        sr.setSrNumber(srNumber);
+                        sr.setSurveyComments(srComments);
+                        sr.setSubmitterGeography(geography);
+                        sr.setSentiment(sentiment);
+                        sr.setSentimentWeightage(sentimentWeightage);
+                        sr.setSentimentScore(sentimentScore);
+                        sr.setSumOfScores(sr.getSumOfAllScores());
+
+                        sr.setClosureType(closureType);
+                        sr.setSubmitterPlatform(submitterPlatform);
+                        sr.setSrType(srType);
+                        sr.setFEResponsible(feResponsible);
+                        sr.setSubmitterSite(submitterSite);
+
+                        srList.add(sr);
+
+                    } catch (Exception e) {
+                        System.out.print(e.getMessage());
+                    }
+                }
+            }
+        }
+
+        String json = new Gson().toJson(srList);
+
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter("file_StanfordNLPWithLemmatization.txt"));
+            writer.write(json);
+
+        } catch (IOException e) {
+        } finally {
+            try {
+                if (writer != null) {
+                    writer.close();
+                }
+            } catch (IOException e) {
+            }
+        }
+        System.out.println("The task completed sucessfully.");
+    }
+
+    public static void readFromExcelSentiwordNet(String file) throws IOException {
+        HSSFWorkbook myExcelBook = new HSSFWorkbook(new FileInputStream(file));
+
+        HSSFSheet myExcelSheet = myExcelBook.getSheet("Sheet1");
+
+        Iterator<Row> iterator = myExcelSheet.iterator();
+
+        double sentimentScore = 0d;
+        String sentiment = null;
+        double supportRepresentativeHelpfulness;
+        double helpfulScore = 0;
+        double communicationQuality;
+        double communicationScore;
+        double productKnowledge;
+        double productKnowledgeScore;
+        double customerServiceQuality;
+        double customerServiceScore;
+        double sentimentWeightage = 0;
+        List srList = new ArrayList<ServiceRequest>();
+
+        while (iterator.hasNext()) {
+            Row nextRow = iterator.next();
+            if (nextRow != null) {
+                if (nextRow.getRowNum() == 0) {
+                    continue; //just skip the rows if row number is 0 or 1
+                }
+                String srNumber = nextRow.getCell(1).getStringCellValue();
+                if (!srNumber.isEmpty()) {
+                    ServiceRequest sr = new ServiceRequest();
+                    System.out.print("SR Number: " + srNumber);
+                    try {
+                        String srComments = nextRow.getCell(40).getStringCellValue();
+                        SWN3 swn = new SWN3("/sentiment/sentiwordnet.txt");
+                        String language = GeneralUtility.LanguageDetector(nextRow.getCell(40).getStringCellValue());
+
+                        String paragraph = srComments;
+                        paragraph = paragraph.toLowerCase();
+                        paragraph = paragraph.trim().replaceAll(" +", " ");
+
+                        //1. Remove all the Digits
+                        paragraph = paragraph.replaceAll("[0-9]", "");
+                        //2. Remove Stopwords
+                        paragraph = GeneralUtility.cleanStopWords(paragraph);
+                        //3. Remove remove Urls
+                        paragraph = removeUrl(paragraph);
+
+                        sentiment = SWN3.extractParagraphSentiment(paragraph, swn);
+                        if (!(language.contains("en") || language.isEmpty())) {
+                            srComments = language;
+                            sentiment = "Neutral";
+                        }
+                        sentimentWeightage = sentimentWeigtage;
+
+                        if (sentiment == "Negative") {
+
+                            sentimentWeightage = sentimentWeigtage * ScoreWeightage.ZERO_PERCENT;
+                        } else if (sentiment == "Neutral") {
+
+                            sentimentWeightage = sentimentWeigtage * ScoreWeightage.FIFTY_PERCENT;
+
+                        } else if (sentiment == "Positive") {
+
+                            sentimentWeightage = sentimentWeigtage * ScoreWeightage.HUNDERED_PERCENT;
+                        }
+
+                        //Assign support Representative Helpfulnes weightage
+                        String srHelpFulness = nextRow.getCell(32).getStringCellValue();
+                        supportRepresentativeHelpfulness = supportHelpfulScoreWeightage * GeneralUtility.genericScoresForValues(srHelpFulness);
+
+                        double srHelpFulScore = nextRow.getCell(33).getNumericCellValue();
+                        int numericValue = (int) srHelpFulScore;
+                        helpfulScore = helpfulScoreWeightage * GeneralUtility.genericScoresForValues(numericValue);
+
+                        //Communication
+                        String cnString = nextRow.getCell(34).getStringCellValue();
+                        communicationQuality = communicationQualityWeightage * GeneralUtility.genericScoresForValues(cnString);
+
+                        double cnScore = nextRow.getCell(35).getNumericCellValue();
+                        numericValue = (int) cnScore;
+                        communicationScore = communicationScoreWeightage * GeneralUtility.genericScoresForValues(numericValue);
+
+                        //Product Knowledge
+                        String pkString = nextRow.getCell(36).getStringCellValue();
+                        productKnowledge = productKnowledgeWeightage * GeneralUtility.genericScoresForValues(pkString);
+
+                        double pkScore = nextRow.getCell(37).getNumericCellValue();
+                        numericValue = (int) pkScore;
+                        productKnowledgeScore = productKnowledgeScoreWeightage * GeneralUtility.genericScoresForValues(numericValue);
+
+                        //Customer Service Quality Knowledge
+                        String csString = nextRow.getCell(38).getStringCellValue();
+                        customerServiceQuality = csqWeightage * GeneralUtility.genericScoresForValues(csString);
+                        double csScore = nextRow.getCell(39).getNumericCellValue();
+                        numericValue = (int) csScore;
+                        customerServiceScore = csqScoreWeightage * GeneralUtility.genericScoresForValues(numericValue);
+                        String submitterSite = nextRow.getCell(26).getStringCellValue();
+                        String submitterPlatform = nextRow.getCell(25).getStringCellValue();
+                        String geography = nextRow.getCell(24).getStringCellValue();
+                        String closureType = nextRow.getCell(3).getStringCellValue();
+                        String feResponsible = nextRow.getCell(11).getStringCellValue();
+                        String srType = nextRow.getCell(28).getStringCellValue();
+                        if (!submitterSite.isEmpty()) {
+                            System.out.println("Submitter Site" + submitterSite);
+                        }
+                        //Put all the values in the object.
+                        sr.setSupportRepresentativeHelpfulness(supportRepresentativeHelpfulness);
+                        sr.setHelpfulScore(helpfulScore);
+                        sr.setCommunicationQuality(communicationQuality);
+                        sr.setCommunicationScore(communicationScore);
+                        sr.setProductKnowledge(productKnowledge);
+                        sr.setProductKnowledgeScore(productKnowledgeScore);
+                        sr.setCustomerServiceQuality(customerServiceQuality);
+                        sr.setCustomerServiceScore(customerServiceScore);
+                        sr.setSrNumber(srNumber);
+                        sr.setSurveyComments(srComments);
+                        sr.setSubmitterGeography(geography);
+                        sr.setSentiment(sentiment);
+                        sr.setSentimentWeightage(sentimentWeightage);
+                        if (Double.isNaN(SWN3.totalScore)) {
+                            SWN3.totalScore = 0d;
+                        }
+                        sr.setSentimentScore(SWN3.totalScore);
+                        sr.setSumOfScores(sr.getSumOfAllScores());
+                        sr.setClosureType(closureType);
+                        sr.setSubmitterPlatform(submitterPlatform);
+                        sr.setSrType(srType);
+                        sr.setFEResponsible(feResponsible);
+                        sr.setSubmitterSite(submitterSite);
+
+                        srList.add(sr);
+
+                    } catch (Exception e) {
+                        System.out.print(e.getMessage());
+                    }
+                }
+            }
+        }
+        String json = new Gson().toJson(srList);
+        /*try {
+
+            gson.toJson(json, new FileWriter("file_StanfordNLP.txt"));
+
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }*/
+
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter("file_Sentiwordnet.txt"));
+            writer.write(json);
+
+        } catch (IOException e) {
+        } finally {
+            try {
+                if (writer != null) {
+                    writer.close();
+                }
+            } catch (IOException e) {
+            }
+        }
+        System.out.println("The task completed sucessfully.");
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(SentimentAnalysisFileGenerator.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(SentimentAnalysisFileGenerator.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(SentimentAnalysisFileGenerator.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(SentimentAnalysisFileGenerator.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new SentimentAnalysisFileGenerator().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnNLPLemmatization;
+    private javax.swing.JButton btnSentiwordnet;
+    private javax.swing.JButton btnStanfordNLP;
+    private javax.swing.JButton btnValidate;
+    private javax.swing.JComboBox<String> cmbCSS;
+    private javax.swing.JComboBox<String> cmbCommScore;
+    private javax.swing.JComboBox<String> cmbCsq;
+    private javax.swing.JComboBox<String> cmbHlpScore;
+    private javax.swing.JComboBox<String> cmbProdKnowledge;
+    private javax.swing.JComboBox<String> cmbProdScore;
+    private javax.swing.JComboBox<String> cmbSentimentWeightage;
+    private javax.swing.JComboBox<String> cmbSplHelpScore;
+    private javax.swing.JComboBox<String> comboCsq;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanelMainScreen;
+    private javax.swing.JTextField jTextField1;
+    private javax.swing.JLabel lblStanfordNLP;
+    private javax.swing.JLabel lblStanfordNLP1;
+    private javax.swing.JLabel lblStanfordNLP2;
+    private javax.swing.JButton openCSATFile;
+    // End of variables declaration//GEN-END:variables
+}
